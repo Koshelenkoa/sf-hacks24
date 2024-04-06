@@ -6,7 +6,7 @@ import time
 from blockchain import Blockchain, Block, Transaction
 
 # Provided IP addresses
-NODE_ADDRESSES = ['192.168.1.124', '192.168.1.137', '192.168.1.141', '192.168.1.137']
+NODE_ADDRESSES = ['192.168.1.137', '192.168.1.141']
 PORT = 8888
 
 opened = []
