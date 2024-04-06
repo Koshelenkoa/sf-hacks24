@@ -1,5 +1,7 @@
 # blockchain.py
 
+# blockchain.py
+
 import json
 import hashlib
 import datetime
@@ -161,6 +163,17 @@ class Blockchain:
         file_path = os.path.join(self.directory, "blockchain.json")
         with open(file_path, "w") as file:
             json.dump(blockchain_data, file, indent=4)
+
+    def mine_block(self):
+        """Mine blocks for the blockchain."""
+        if self.pending_transactions:
+            new_block = Block(len(self.chain), datetime.datetime.now(), self.pending_transactions, self.get_latest_block().hash)
+            new_block.mine_block(self.difficulty)
+            if self.add_block(new_block):
+                self.pending_transactions = []  # Clear pending transactions
+                print("New block mined!")
+                return True
+        return False
 
 class Content:
     def __init__(self, title, description, content):
