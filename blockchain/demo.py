@@ -1,5 +1,8 @@
 import asyncio
 import json
+import random
+import string
+import time
 from blockchain import Blockchain, Block, Transaction
 
 # Provided IP addresses
@@ -117,5 +120,24 @@ async def handle_message(reader, writer):
     elif message_type == "SEND_INFO":
         await handle_send_check(message)
 
+async def add_random_transactions():
+    """Add random transactions to the blockchain."""
+    while True:
+        sender = ''.join(random.choices(string.ascii_letters, k=10))
+        recipient = ''.join(random.choices(string.ascii_letters, k=10))
+        amount = random.randint(1, 100)
+        data = {'sender': sender, 'recipient': recipient, 'amount': amount, 'data': ''}
+        transaction = Transaction(**data)
+        temp_chain.add_transaction(transaction)
+        await asyncio.sleep(5)  # Add transaction every 5 seconds
+
+async def mine_blocks():
+    """Mine blocks for the blockchain."""
+    while True:
+        if len(temp_chain.pending_transactions) > 0:
+            new_block = temp_chain.mine_block()
+            print("New block mined!")
+        await asyncio.sleep(10)  # Mine a block every 10 seconds
+
 if __name__ == "__main__":
-    asyncio.run(asyncio.gather(connect_to_nodes(), start_listen()))
+    asyncio.run(asyncio.gather(connect_to_nodes(), start_listen(), add_random_transactions(), mine_blocks()))
