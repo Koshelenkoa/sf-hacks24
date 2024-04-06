@@ -1,5 +1,8 @@
 import asyncio
 import json
+import random
+import string
+import time
 from blockchain import Blockchain, Block, Transaction
 
 # Provided IP addresses
@@ -109,5 +112,48 @@ async def handle_message(reader, writer):
     elif message_type == "SEND_INFO":
         await handle_send_check(message)
 
+async def generate_random_transactions(num_transactions):
+    """Generate a list of random transactions."""
+    transactions = []
+    for _ in range(num_transactions):
+        sender = ''.join(random.choices(string.ascii_lowercase, k=5))
+        recipient = ''.join(random.choices(string.ascii_lowercase, k=5))
+        amount = random.randint(1, 100)
+        data = {"field1": ''.join(random.choices(string.ascii_lowercase, k=10)), "field2": ''.join(random.choices(string.ascii_lowercase, k=10))}  # Example additional data
+        transaction = Transaction(sender, recipient, amount, data)
+        transactions.append(transaction)
+    return transactions
+
+async def mine_blocks(blockchain):
+    """Miner thread to mine pending transactions."""
+    while True:
+        await asyncio.sleep(5)  # Mine every 5 seconds
+        if blockchain.pending_transactions:
+            print("[Miner] Mining new block...")
+            if blockchain.mine_pending_transactions(miner_address="miner"):
+                print("[Miner] Block mined successfully!")
+                blockchain.save_to_file()
+            else:
+                print("[Miner] No pending transactions to mine.")
+
+async def main():
+    # Start miner task
+    miner_task = asyncio.create_task(mine_blocks(temp_chain))
+
+    # Simulate generating and adding random transactions
+    try:
+        while True:
+            await asyncio.sleep(3)  # Wait for transactions to accumulate
+            num_transactions = random.randint(1, 5)
+            transactions = await generate_random_transactions(num_transactions)
+            print("[Instance] Adding transactions to pending transactions...")
+            for transaction in transactions:
+                temp_chain.add_transaction(transaction)
+                print("[Instance] Transaction added to pending transactions:", transaction.to_dict())
+    except KeyboardInterrupt:
+        print("\n[Instance] Exiting...")
+        miner_task.cancel()
+
 if __name__ == "__main__":
     asyncio.run(start_listen())
+    asyncio.run(main())
