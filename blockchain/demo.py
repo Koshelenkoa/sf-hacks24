@@ -1,9 +1,10 @@
 import asyncio
 import json
-import socket
 from blockchain import Blockchain, Block, Transaction
 
-MY_ADDRESS = socket.gethostbyname(socket.gethostname())
+# Provided IP addresses
+NODE_ADDRESSES = ['192.168.1.124', '192.168.1.137', '192.168.1.141', '192.168.1.137']
+
 opened = []
 connected = []
 check = []
@@ -13,12 +14,10 @@ temp_chain = Blockchain()
 
 async def handle_handshake(message, writer):
     nodes = message['data']['nodes']
-    nodes.insert(0, MY_ADDRESS)
+    nodes.insert(0, writer.get_extra_info('peername')[0])  # Get the IP address of the connected node
     for node in nodes:
         if node in opened:
             print("Node already exists.")
-        elif node == MY_ADDRESS:
-            print("This is my address.")
         else:
             opened.append(node)
             try:
@@ -74,7 +73,7 @@ async def handle_send_check(message):
         check.append(message['data'])
 
 async def start_listen():
-    server = await asyncio.start_server(handle_message, MY_ADDRESS, 8888)
+    server = await asyncio.start_server(handle_message, '0.0.0.0', 8888)  # Listen on all available interfaces
 
     addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
     print(f'Serving on {addrs}')

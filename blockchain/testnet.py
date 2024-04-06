@@ -1,5 +1,4 @@
-# testnet.py
-
+# Updated testnet.py
 from blockchain import Blockchain, Block, Transaction, generate_key_pair
 import random
 import string
@@ -29,7 +28,8 @@ def generate_random_transactions(num_transactions):
         sender = random_string()
         recipient = random_string()
         amount = random.randint(1, 100)
-        transaction = Transaction(sender, recipient, amount)
+        data = {"field1": random_string(), "field2": random_string()}  # Example additional data
+        transaction = Transaction(sender, recipient, amount, data)
         transactions.append(transaction)
     return transactions
 
