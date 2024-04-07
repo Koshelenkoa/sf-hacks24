@@ -154,7 +154,7 @@ async def add_random_transactions():
         data = {'sender': sender, 'recipient': recipient, 'amount': amount, 'data': ''}
         transaction = Transaction(**data)
         temp_chain.add_transaction(transaction)
-        broadcast(json.dumps({'type': 'CREATE', 'data': {'sender': sender, 'recipient': recipient, 'amount': amount}})) 
+        await broadcast(json.dumps({'type': 'CREATE', 'data': data})) 
         await asyncio.sleep(5)  # Add transaction every 5 seconds
 
 async def mine_blocks():
@@ -165,5 +165,8 @@ async def mine_blocks():
             print("New block mined!")
         await asyncio.sleep(10)  # Mine a block every 10 seconds
 
+async def cor():
+    await asyncio.gather(connect_to_nodes(), start_listen(), add_random_transactions(), mine_blocks())
+
 if __name__ == "__main__":
-    asyncio.run(asyncio.gather(connect_to_nodes(), start_listen(), add_random_transactions(), mine_blocks()))
+    asyncio.run(cor())
