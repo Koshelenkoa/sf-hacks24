@@ -1,0 +1,3 @@
+{
+  "mongo_db_client": "mongodb://localhost:27017/"
+}

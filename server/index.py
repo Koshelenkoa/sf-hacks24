@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
-from flask import Flask, jsonify, request
+from flask_cors import CORS
 import json
 
 app = Flask(__name__)
+
+# Enable CORS
+CORS(app)
+
 with open('config.json') as config_file:
     config_data = json.load(config_file)
 
@@ -13,7 +17,7 @@ records_collection = db['recors']
 form_collection = db['forms']
 
 @app.route('/records', methods=['GET'])
-def get_items():
+def get_record_items():
     # Get query parameters
     query_params = request.args.to_dict()
 
@@ -27,7 +31,7 @@ def get_items():
         return jsonify({'error': 'Item not found'}), 404
 
 @app.route('/forms', methods=['GET'])
-def get_items():
+def get_form_items():
     # Get query parameters
     query_params = request.args.to_dict()
 
@@ -40,22 +44,22 @@ def get_items():
     return jsonify(items_list)
 
 @app.route('/records', methods=['POST'])
-def add_item():
-    data = request.json  
+def add_record_item():
     try:
+        data = request.json 
         records_collection.insert_one(data)  # Inserting data into MongoDB
-        return jsonify({"message": "Item added successfully"}), 201
-    except:
-        return 500
+        return jsonify({"message": "Record added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/forms', methods=['POST'])
-def add_item():
-    data = request.json 
+def add_form_item():
     try:
+        data = request.json 
         form_collection.insert_one(data)  # Inserting data into MongoDB
-        return jsonify({"message": "Item added successfully"}), 201
-    except:
-        return 500
+        return jsonify({"message": "Form added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 @app.route('/ips', methods=['GET'])
 def update_ips():
