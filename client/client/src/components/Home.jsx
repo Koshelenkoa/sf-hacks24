@@ -1,12 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import big_logo from "../media/HH-logo-wide.png"
 
 const Home = () => {
   return (
-    <div className="flex flex-col h-screen bg-blue-50">
+    <div className="flex flex-col h-screen ">
       <div className="container mx-auto px-6 md:px-12 xl:px-24">
         <div className="hero-section text-center p-12 md:p-24">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">
+          <img src={big_logo} alt="Main logo" className="mx-auto md:h-40"/>
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600">
             Transforming Business Operations with Blockchain
           </h1>
           <p className="text-lg text-gray-600 mb-8">
@@ -15,7 +17,7 @@ const Home = () => {
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-800 mb-3">Why Trust Us?</h2>
             <p className="text-gray-600">
-              With a proven track record in enhancing operational trust and integrity, we empower your business with secure and verifiable transactions.
+              We empower your business with secure and verifiable transactions.
             </p>
           </div>
           <div className="mb-8">
@@ -27,7 +29,7 @@ const Home = () => {
             </ul>
           </div>
           <div className="call-to-action">
-            <Link to="/addBlock" className="bg-blue-600 text-white font-bold py-3 px-6 rounded hover:bg-blue-700 transition duration-300">
+            <Link to="/addBlock" className="bg-yellow-600 text-white font-bold py-3 px-6 rounded hover:bg-yellow-700 transition duration-300">
               Get Started
             </Link>
           </div>

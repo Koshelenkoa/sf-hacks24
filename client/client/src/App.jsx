@@ -6,7 +6,7 @@ import AddBlock from './components/AddBlock';
 
 import { Routes, Route} from "react-router-dom";
 import React, {useState, useEffect} from "react";
-import axios from "axios";
+
 
 import mockData from './blockchain_data/blockchain.json';
 
