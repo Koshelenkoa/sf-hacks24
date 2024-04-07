@@ -10,11 +10,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
 class Transaction:
-    def __init__(self, sender, recipient, amount):
+
+    def __init__(self, sender, recipient, amount, data):
         self.sender = sender
         self.recipient = recipient
         self.amount = amount
         self.timestamp = datetime.datetime.now()
+        self.data = data  # Additional data for the transaction
         self.hash = self.calculate_hash()  # Calculate and store the hash
 
     def to_dict(self):
@@ -22,17 +24,18 @@ class Transaction:
             "sender": self.sender,
             "recipient": self.recipient,
             "amount": self.amount,
-            "timestamp": str(self.timestamp)
+            "timestamp": str(self.timestamp),
+            "data": self.data
         }
 
     def calculate_hash(self):
         sha = hashlib.sha256()
-        sha.update((self.sender + self.recipient + str(self.amount) + str(self.timestamp)).encode('utf-8'))
+        sha.update((self.sender + self.recipient + str(self.amount) + str(self.timestamp) + str(self.data)).encode('utf-8'))
         return sha.hexdigest()
 
     def is_valid(self):
-        # Check if sender, recipient, and amount are present
-        if not self.sender or not self.recipient or not self.amount:
+        # Check if sender, recipient, amount, and data are present
+        if not self.sender or not self.recipient or not self.amount or not self.data:
             return False
         # Check if the transaction hash matches the calculated hash
         if self.calculate_hash() != self.hash:
@@ -93,12 +96,29 @@ class Blockchain:
             return True
         return False
 
+    def receive_block(self, block_data):
+        block = Block(
+            block_data['index'],
+            datetime.datetime.strptime(block_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f'),
+            [Transaction(
+                tx['sender'],
+                tx['recipient'],
+                tx['amount'],
+                tx['data']
+            ) for tx in block_data['transactions']],
+            block_data['previous_hash']
+        )
+        if self.add_block(block):
+            print("Received block added to the chain.")
+        else:
+            print("Received block was not added to the chain.")
+
     def mine_pending_transactions(self, miner_address):
         if not self.pending_transactions:
             return False
         
         # Create a reward transaction for the miner
-        reward_transaction = Transaction("SYSTEM", miner_address, self.MINING_REWARD)
+        reward_transaction = Transaction("SYSTEM", miner_address, self.MINING_REWARD, "Mining reward")
         self.pending_transactions.append(reward_transaction)
 
         new_block = Block(len(self.chain), datetime.datetime.now(), self.pending_transactions, self.get_latest_block().hash)
@@ -168,4 +188,3 @@ def generate_key_pair():
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     return private_key_pem, public_key_pem
-

@@ -1,9 +1,14 @@
 import asyncio
 import json
-import socket
+import random
+import string
+import time
 from blockchain import Blockchain, Block, Transaction
 
-MY_ADDRESS = socket.gethostbyname(socket.gethostname())
+# Provided IP addresses
+NODE_ADDRESSES = ['192.168.1.137', '192.168.1.141']
+PORT = 8888
+
 opened = []
 connected = []
 check = []
@@ -11,21 +16,35 @@ checked = []
 checking = False
 temp_chain = Blockchain()
 
+async def connect_to_nodes():
+    """Establish connections to other nodes."""
+    for node_address in NODE_ADDRESSES:
+        try:
+            reader, writer = await asyncio.open_connection(node_address, PORT)
+            message = json.dumps({'type': 'HANDSHAKE', 'data': {'nodes': NODE_ADDRESSES}})
+            writer.write(message.encode())
+            connected.append(node_address)
+            print(f"Connected to node: {node_address}")
+            writer.close()
+        except ConnectionRefusedError:
+            print(f"Connection to node {node_address} failed.")
+
 async def handle_handshake(message, writer):
     nodes = message['data']['nodes']
-    nodes.insert(0, MY_ADDRESS)
+    sender_ip = writer.get_extra_info('peername')[0]
+    print(f"Received handshake from {sender_ip}")
+    nodes.insert(0, sender_ip)  # Get the IP address of the connected node
     for node in nodes:
         if node in opened:
             print("Node already exists.")
-        elif node == MY_ADDRESS:
-            print("This is my address.")
         else:
             opened.append(node)
             try:
-                reader, writer = await asyncio.open_connection(node, 8888)
+                reader, writer = await asyncio.open_connection(node, PORT)
                 message = json.dumps({'type': 'HANDSHAKE', 'data': {'nodes': nodes}})
                 writer.write(message.encode())
                 connected.append(node)
+                print(f"Connected to {node}")
                 writer.close()
             except ConnectionRefusedError:
                 print(f"Connection to {node} failed.")
@@ -74,7 +93,7 @@ async def handle_send_check(message):
         check.append(message['data'])
 
 async def start_listen():
-    server = await asyncio.start_server(handle_message, MY_ADDRESS, 8888)
+    server = await asyncio.start_server(handle_message, '0.0.0.0', PORT)  # Listen on all available interfaces
 
     addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
     print(f'Serving on {addrs}')
@@ -102,4 +121,5 @@ async def handle_message(reader, writer):
         await handle_send_check(message)
 
 if __name__ == "__main__":
-    asyncio.run(start_listen())
+    asyncio.run(connect_to_nodes())  # Connect to other nodes
+    asyncio.run(start_listen())  # Start listening for incoming connections
