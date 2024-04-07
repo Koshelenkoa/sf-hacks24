@@ -27,9 +27,7 @@ const Layout = () => {
     
       </header>
       <main className="flex-grow">
-        <div className="py-10">
-            <Outlet />
-        </div>
+        <Outlet />
       </main>
 
       <footer className="p-4 bg-gray-800 text-white">
