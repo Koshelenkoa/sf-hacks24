@@ -32,6 +32,10 @@ const AddBlock = () => {
         setTransactions([...transactions, [{ key: 'sender', value: '' }, { key: 'recipient', value: '' }, { key: 'amount', value: '' }]]);
       };
 
+      const addToBlockChain = () => {
+
+      }
+
       return (
         <div className="flex flex-col h-screen p-4">
           <header className="flex justify-between items-center">
@@ -74,10 +78,14 @@ const AddBlock = () => {
               <button onClick={addTransaction} className="bg-green-500 text-white p-3 rounded hover:bg-green-600">
                 + Add Transaction
               </button>
+
             </div>
+              <button onClick={addToBlockChain} className='bg-green-500 text-white p-3 rounded hover:bg-green-600'>
+               + Add to Blockchain
+              </button>
           </div>
     
-        {/* Need button that will post transactions to blockchaiin   */}
+      
         </div>
       );
 }
