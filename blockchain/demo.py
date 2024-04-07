@@ -4,10 +4,18 @@ import random
 import string
 import time
 from blockchain import Blockchain, Block, Transaction
+import socket
+import requests
+
+
+hostname = socket.gethostname()
+MY_ADDRESS = socket.gethostbyname(hostname)
 
 # Provided IP addresses
 NODE_ADDRESSES = ['192.168.1.137', '192.168.1.141']
 PORT = 8888
+WEB_ADDRESS = '127.0.0.1' #local testing
+WEB_PORT = 80
 
 opened = []
 connected = []
@@ -15,6 +23,28 @@ check = []
 checked = []
 checking = False
 temp_chain = Blockchain()
+
+async def get_ips(): #request ips from the central server
+    url = f"http://{WEB_ADDRESS}/{WEB_PORT}/ips" 
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        ips = response.json()
+        NODE_ADDRESSES = set(NODE_ADDRESSES).union(set(ips))
+    else:
+    # Print an error message
+        print("Error:", response.status_code)
+
+async def broadcast(message):
+    for node in NODE_ADDRESSES:
+        if node != MY_ADDRESS:
+            reader, writer = await asyncio.open_connection(node, PORT)
+            writer.write(message.encode())
+            connected.append(node)
+            print(f"Connected to node: {node}")
+            writer.close()
+
 
 async def connect_to_nodes():
     """Establish connections to other nodes."""
@@ -62,18 +92,13 @@ async def handle_add(message, writer):
         transactions=new_block_data['transactions'],
         previous_hash=new_block_data['previous_hash']
     )
-    
     # Add the new block to the blockchain
     if temp_chain.add_block(new_block):
         print("New block added to the blockchain.")
-        response_message = json.dumps({'type': 'ADD_SUCCESS', 'data': 'New block added successfully.'})
+        message_res = json.dumps({'type': 'REQUEST_CHECK', 'data': MY_ADDRESS})
+        broadcast(message_res)
     else:
         print("Failed to add new block to the blockchain.")
-        response_message = json.dumps({'type': 'ADD_ERROR', 'data': 'Failed to add new block.'})
-    
-    writer.write(response_message.encode())
-    await writer.drain()
-    writer.close()
 
 async def handle_request_check(message, writer):
     for i in range(len(temp_chain.chain)):
@@ -129,6 +154,7 @@ async def add_random_transactions():
         data = {'sender': sender, 'recipient': recipient, 'amount': amount, 'data': ''}
         transaction = Transaction(**data)
         temp_chain.add_transaction(transaction)
+        broadcast(json.dumps({'type': 'CREATE', 'data': {'sender': sender, 'recipient': recipient, 'amount': amount}})) 
         await asyncio.sleep(5)  # Add transaction every 5 seconds
 
 async def mine_blocks():
