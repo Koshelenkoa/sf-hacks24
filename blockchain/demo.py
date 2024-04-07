@@ -1,8 +1,5 @@
 import asyncio
 import json
-import random
-import string
-import time
 from blockchain import Blockchain, Block, Transaction
 
 # Provided IP addresses
@@ -121,5 +118,4 @@ async def handle_message(reader, writer):
         await handle_send_check(message)
 
 if __name__ == "__main__":
-    asyncio.run(connect_to_nodes())  # Connect to other nodes
-    asyncio.run(start_listen())  # Start listening for incoming connections
+    asyncio.run(asyncio.gather(connect_to_nodes(), start_listen()))
